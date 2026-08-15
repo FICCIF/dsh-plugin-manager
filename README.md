@@ -23,10 +23,12 @@
 ```bash
 npm install          # 安装依赖
 npm start            # 开发模式启动桌面窗口
-npm run pack         # 打包为绿色免安装 exe（产物在 dist/ 目录）
+node pack.mjs        # 一键瘦身打包：绿色免安装 exe + 便携 zip（产物在 dist/ 与项目上级目录）
 ```
 
 打包后直接双击 `dist\DSH插件管理器-win32-x64\DSH插件管理器.exe` 即可使用，无需安装。
+
+> **瘦身说明**：`pack.mjs` 会自动删除用不到的运行时文件（多语言包只留中英、WebGPU 编译器、ffmpeg 等），把 317MB 的 Electron 运行时压到便携包约 104MB。
 
 ### 浏览器模式
 
@@ -51,6 +53,7 @@ npm run server       # 等价于 node server.mjs
 ├── main.js          Electron 主进程（窗口 + 内置服务）
 ├── app.mjs          核心服务模块（Node / Electron 共用）
 ├── server.mjs       Node 模式入口
+├── pack.mjs         一键瘦身打包脚本
 ├── public/
 │   └── index.html   前端页面（原生 HTML/JS/CSS，无框架）
 ├── start.bat        浏览器模式一键启动
