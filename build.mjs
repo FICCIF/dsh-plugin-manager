@@ -222,7 +222,7 @@ if (existsSync(cfg.outDir)) rmSync(cfg.outDir, { recursive: true, force: true })
 mkdirSync(cfg.outDir, { recursive: true })
 
 log('2/4 复制运行时与配置...')
-cfg.build()
+await cfg.build()
 
 log('3/4 打包前端资源 (resources.neu)...')
 
