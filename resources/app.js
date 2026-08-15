@@ -221,8 +221,67 @@ async function buildPayload() {
   }
 }
 
+// ── 卸载插件（彻底移除） ─────────────────────────────────────────────────────
+
+/**
+ * 卸载插件：从 DSH 彻底移除（不只是停用）。
+ * 流程：
+ *  1) package.json 移除 dependencies 与 bundles 条目
+ *  2) 清理 cordis.patch.yml 的 managed section（移除该条目）
+ *  3) 运行 pnpm install 移除 node_modules 中的实际包
+ *
+ * 注意：核心/官方组件不允许卸载（只可停用）；卸载后需重新安装才能恢复。
+ */
+async function uninstallPlugin(id) {
+  const thirdParty = await collectThirdParty()
+  const item = thirdParty.find(p => p.id === id)
+  if (!item) throw new Error('未知插件条目: ' + id)
+  const pkg = item.pkg
+
+  // 安全校验
+  if (pkg.startsWith('@deepseek-ai/') || pkg.startsWith('（') || CORE_PACKAGES.has(pkg)) {
+    throw new Error('「' + id + '」是核心或官方组件，不支持卸载（只可停用）')
+  }
+
+  // 1) package.json：移除依赖与 bundle 条目
+  const manifest = JSON.parse(await readFileSafe(PROFILE_MANIFEST))
+  if (manifest.dependencies && Object.prototype.hasOwnProperty.call(manifest.dependencies, pkg)) {
+    delete manifest.dependencies[pkg]
+  }
+  if (manifest.dsh?.profile?.bundles) {
+    manifest.dsh.profile.bundles = manifest.dsh.profile.bundles.filter(b => b !== pkg)
+  }
+  await Neutralino.filesystem.writeFile(PROFILE_MANIFEST, JSON.stringify(manifest, null, 2) + '\n')
+
+  // 2) 清理补丁 managed section（移除该条目的 disabled 记录）
+  let text = await readFileSafe(PROFILE_PATCH)
+  const disabled = await readUserDisabled()
+  disabled.delete(id)
+  const entries = [...disabled].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+  const section = [
+    SECTION_START,
+    '# 本段由「DSH 插件管理器」自动维护',
+    ...entries.map(e => `- id: ${e}\n  disabled: true`),
+    SECTION_END,
+    '',
+  ].join('\n')
+  const sectionRe = new RegExp('^' + escapeRegExp(SECTION_START) + '[\\s\\S]*?^' + escapeRegExp(SECTION_END) + '[ \\t]*\\r?\\n?', 'm')
+  text = text.replace(sectionRe, section)
+  await Neutralino.filesystem.writeFile(PROFILE_PATCH, text)
+
+  // 3) pnpm install：移除 node_modules 中的实际包
+  const cmd = 'pnpm --dir "' + PROFILE_DIR + '" install'
+  const res = await Neutralino.os.execCommand(cmd)
+  if (res.exitCode !== 0) {
+    throw new Error('pnpm install 失败（exit ' + res.exitCode + '）。配置文件已更新，请手动运行：' + cmd)
+  }
+
+  return { id, pkg }
+}
+
 // 暴露给页面
 window.DSHPluginManager = {
   list: buildPayload,
   toggle: togglePlugin,
+  uninstall: uninstallPlugin,
 }

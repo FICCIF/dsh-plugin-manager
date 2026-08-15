@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-manager",
-  "version": "1.1.0",
-  "description": "DSH 插件管理器：图形化启用/停用 DSH 插件（Neutralino 轻量桌面版，~2MB）",
+  "version": "1.2.0",
+  "description": "DSH 插件管理器：图形化启用/停用/卸载 DSH 插件（Neutralino 轻量桌面版，~2MB）",
   "type": "module",
   "author": "dsh-plugin-manager contributors",
   "license": "MIT",

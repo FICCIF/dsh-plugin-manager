@@ -116,6 +116,14 @@
     background: transparent; color: var(--gray); border: 1px dashed var(--gray-border);
     cursor: not-allowed;
   }
+  .card .actions { display: flex; flex-direction: column; gap: 6px; }
+  button.uninstall {
+    border: none; border-radius: 9px; padding: 6px 12px; font-size: 12px;
+    cursor: pointer; font-weight: 600; white-space: nowrap; transition: all .15s;
+    background: transparent; color: #dc2626; border: 1px solid #fecaca;
+  }
+  button.uninstall:hover { background: #fef2f2; }
+  button.uninstall:disabled { opacity: .5; cursor: wait; }
 
   .toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
@@ -221,6 +229,8 @@ function card(p) {
   info.appendChild(pkg)
 
   const btn = document.createElement('button')
+  const actions = document.createElement('div')
+  actions.className = 'actions'
   if (p.kind === 'builtin') {
     btn.className = 'toggle locked'
     btn.textContent = '锁定'
@@ -230,9 +240,19 @@ function card(p) {
     btn.textContent = p.enabled ? '停用' : '启用'
     btn.addEventListener('click', () => toggle(p, btn))
   }
+  actions.appendChild(btn)
+
+  // 第三方非核心插件提供「卸载」按钮
+  if (p.kind === 'third-party' && !p.core) {
+    const unBtn = document.createElement('button')
+    unBtn.className = 'uninstall'
+    unBtn.textContent = '🗑️ 卸载'
+    unBtn.addEventListener('click', () => uninstall(p, unBtn))
+    actions.appendChild(unBtn)
+  }
 
   el.appendChild(info)
-  el.appendChild(btn)
+  el.appendChild(actions)
   return el
 }
 
@@ -288,6 +308,23 @@ async function toggle(p, btn) {
     showToast('操作失败：' + e.message, true)
   } finally {
     btn.disabled = false
+  }
+}
+
+async function uninstall(p, btn) {
+  const warn = '⚠️ 卸载将从 DSH 中彻底移除该插件（包括文件），\n卸载后需要重新安装才能恢复！\n\n确定要卸载「' + p.id + '」吗？\n（' + p.pkg + '）'
+  if (!confirm(warn)) return
+
+  btn.disabled = true
+  btn.textContent = '卸载中…'
+  try {
+    const data = await DSHPluginManager.uninstall(p.id)
+    showToast(`已卸载「${data.id}」，建议重启 DSH 后完全生效 ✓`)
+    load()
+  } catch (e) {
+    showToast('卸载失败：' + e.message, true)
+    btn.disabled = false
+    btn.textContent = '🗑️ 卸载'
   }
 }
 

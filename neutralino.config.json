@@ -1,6 +1,6 @@
 {
   "applicationId": "com.ficcif.dsh-plugin-manager",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "defaultMode": "window",
   "port": 8766,
   "documentRoot": "/resources/",
@@ -9,7 +9,7 @@
   "enableNativeAPI": true,
   "tokenSecurity": "one-time",
   "singlePage": false,
-  "nativeAllowList": ["app.*", "filesystem.*"],
+  "nativeAllowList": ["app.*", "filesystem.*", "os.*"],
   "modes": {
     "window": {
       "title": "DSH 插件管理器",
