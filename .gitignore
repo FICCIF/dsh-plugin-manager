@@ -10,3 +10,6 @@ Thumbs.db
 # 编辑器
 .vscode/
 .idea/
+
+# 本地便携包（构建时输出到项目上级目录）
+DSH插件管理器-*.zip
