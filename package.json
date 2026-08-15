@@ -1,0 +1,22 @@
+{
+  "name": "dsh-plugin-manager",
+  "version": "1.0.0",
+  "description": "DSH 插件管理器：图形化启用/停用 DSH 插件，修改即时生效（DSH 热加载）",
+  "type": "module",
+  "main": "main.js",
+  "author": "dsh-plugin-manager contributors",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "server": "node server.mjs",
+    "pack": "electron-packager . \"DSH插件管理器\" --platform=win32 --arch=x64 --out=dist --overwrite --asar --ignore=\"^/dist\" --ignore=\"^/node_modules/\\.cache\"",
+    "postpack": "echo 打包完成，产物在 dist\\DSH插件管理器-win32-x64\\"
+  },
+  "devDependencies": {
+    "electron": "^37.10.3",
+    "electron-packager": "^17.1.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
